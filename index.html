@@ -3,345 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sinergia Tecnológica Sostenible</title>
+    <title>Simulador Microeconómico - Producción Avícola</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --ia-color: #38bdf8;
-            --cloud-color: #818cf8;
-            --ec-color: #34d399;
-            --accent-color: #fbbf24;
+            --primary: #2c3e50;
+            --secondary: #16a085;
+            --accent: #e74c3c;
+            --bg: #f8f9fa;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: var(--primary);
+            text-align: center;
+        }
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .form-group {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
         }
-
-        header {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #1e1b4b, #0f172a);
-            border-bottom: 1px solid #334155;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        header p {
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-
-        .main-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 90px);
-        }
-
-        /* Área del Mapa */
-        .map-section {
-            flex: 1.2;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 70%);
-            padding: 20px;
-        }
-
-        .network-container {
-            position: relative;
-            width: 500px;
-            height: 500px;
-        }
-
-        /* Líneas de conexión */
-        .line {
-            position: absolute;
-            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5));
-            height: 2px;
-            transform-origin: left center;
-            z-index: 1;
-        }
-
-        /* Nodos */
-        .node {
-            position: absolute;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .form-group label {
             font-weight: bold;
-            font-size: 0.9rem;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 2;
-            padding: 10px;
-        }
-
-        .node:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 25px currentColor;
-        }
-
-        .node-center {
-            width: 120px;
-            height: 120px;
-            background-color: #fff;
-            color: #0f172a;
-            top: 190px;
-            left: 190px;
-            border: 4px solid var(--accent-color);
-        }
-
-        .node-ia {
-            width: 110px;
-            height: 110px;
-            background-color: var(--card-bg);
-            border: 3px solid var(--ia-color);
-            color: var(--ia-color);
-            top: 40px;
-            left: 195px;
-        }
-
-        .node-cloud {
-            width: 110px;
-            height: 110px;
-            background-color: var(--card-bg);
-            border: 3px solid var(--cloud-color);
-            color: var(--cloud-color);
-            top: 310px;
-            left: 60px;
-        }
-
-        .node-ec {
-            width: 110px;
-            height: 110px;
-            background-color: var(--card-bg);
-            border: 3px solid var(--ec-color);
-            color: var(--ec-color);
-            top: 310px;
-            left: 330px;
-        }
-
-        /* Nodos de Sinergia (Intersecciones) */
-        .node-synergy {
-            width: 80px;
-            height: 80px;
-            font-size: 0.75rem;
-            background-color: #334155;
-            border: 2px dashed var(--accent-color);
-            color: var(--accent-color);
-        }
-
-        .syn-ia-cloud { top: 180px; left: 80px; }
-        .syn-cloud-ec { top: 380px; left: 210px; }
-        .syn-ec-ia { top: 180px; left: 340px; }
-
-        /* Panel de Información */
-        .info-section {
-            flex: 0.8;
-            background-color: var(--card-bg);
-            border-left: 1px solid #334155;
-            padding: 30px;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        .info-content h2 {
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            font-size: 1.6rem;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 10px;
-        }
-
-        .info-content h3 {
-            margin-top: 20px;
-            color: #e2e8f0;
-            font-size: 1.1rem;
-        }
-
-        .info-content p {
-            color: #cbd5e1;
-            margin-top: 8px;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        .info-content ul {
-            margin-top: 10px;
-            margin-left: 20px;
-            color: #cbd5e1;
-        }
-
-        .info-content li {
             margin-bottom: 8px;
-            font-size: 0.95rem;
+            color: var(--primary);
         }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            grid-column: 1 / -1;
+            background: var(--secondary);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #117a65;
+        }
+        .results-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
             border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            background-color: #475569;
         }
-
-        /* Responsivo simple */
-        @media (max-width: 900px) {
-            .main-container { flex-direction: column; height: auto; overflow: visible; }
-            .map-section { height: 550px; flex: none; }
-            .info-section { height: 400px; flex: none; border-left: none; border-top: 1px solid #334155; }
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .highlight-optimo { background-color: #d4edda !important; font-weight: bold; }
+        .highlight-cierre { background-color: #f8d7da !important; font-weight: bold; }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Mapeo de Sinergias Tecnológicas Sostenibles</h1>
-        <p>Lona Luces Santiago - Barrios Reyes Christian Abraham.</p>
-    </header>
+<div class="container">
+    <h1>Simulador del Modelo de Costos Avícola</h1>
+    <p style="text-align: center; font-style: italic;">Caso de estudio: Eficiencia Económica en Pollo de Engorda (Cobb 500)</p>
+    
+    <hr>
 
-    <div class="main-container">
-        <div class="map-section">
-            <div class="network-container">
-                <div class="node node-center" onclick="showInfo('centro')">Sostenibilidad Tecnológica</div>
-                
-                <div class="node node-ia" onclick="showInfo('ia')">Inteligencia Artificial</div>
-                <div class="node node-cloud" onclick="showInfo('cloud')">Cloud Computing</div>
-                <div class="node node-ec" onclick="showInfo('ec')">Economía Circular</div>
-
-                <div class="node node-synergy syn-ia-cloud" onclick="showInfo('ia-cloud')">IA + Cloud<br>(Eficiencia)</div>
-                <div class="node node-cloud-ec" class="node node-synergy syn-cloud-ec" onclick="showInfo('cloud-ec')"><div class="node node-synergy syn-cloud-ec">Cloud + EC<br>(Desmaterial)</div></div>
-                <div class="node node-synergy syn-ec-ia" onclick="showInfo('ec-ia')">EC + IA<br>(Optimización)</div>
-            </div>
+    <div class="grid-inputs">
+        <div class="form-group">
+            <label for="costoFijo">Costos Fijos ($ CF):</label>
+            <input type="number" id="costoFijo" value="5000" min="0">
         </div>
-
-        <div class="info-section" id="info-panel">
-            <div class="info-content">
-                <h2>Selecciona un nodo para comenzar</h2>
-                <p>Explora cómo la convergencia de estas tres vertientes permite crear soluciones de TI verdes, reducir la huella de carbono y potenciar los ecosistemas de negocio regenerativos.</p>
-            </div>
+        <div class="form-group">
+            <label for="precioAlimento">Precio Alimento/Kg ($):</label>
+            <input type="number" id="precioAlimento" value="12" step="0.1" min="0">
         </div>
+        <div class="form-group">
+            <label for="precioPollo">Precio Venta Pollo/Kg ($):</label>
+            <input type="number" id="precioPollo" value="38" step="0.1" min="0">
+        </div>
+        <button onclick="calcularSimulacion()">Simular y Graficar</button>
     </div>
 
-    <script>
-        // Base de datos de contenidos
-        const data = {
-            centro: {
-                title: "Ecosistema Tecnológico Sostenible",
-                badge: "Meta de Integración",
-                desc: "Es la cúspide donde la infraestructura (Cloud), la lógica cognitiva (IA) y el modelo de negocio regenerativo (Economía Circular) se unifican para crear soluciones que no solo consuman menos recursos, sino que reparen el entorno.",
-                points: [
-                    "**Reducción del ciclo de vida de hardware:** El software optimizado exige menos renovación de servidores.",
-                    "**Descarbonización operativa:** Algoritmos corriendo en centros de datos alimentados por energía 100% renovable.",
-                    "**Resiliencia de recursos:** Monitoreo y trazabilidad absoluta desde la fabricación del chip hasta su reciclaje final."
-                ]
-            },
-            ia: {
-                title: "Inteligencia Artificial (IA)",
-                badge: "El Cerebro del Sistema",
-                desc: "La IA actúa como el motor de optimización analítica. Permite predecir patrones de consumo, mejorar el diseño de materiales y automatizar decisiones complejas que reducen el desperdicio.",
-                points: [
-                    "**Mantenimiento Predictivo:** Evita fallas en hardware industrial y tecnológico, extendiendo su vida útil.",
-                    "**Modelado de Materiales:** Simulación de nuevos compuestos biodegradables o altamente reciclables para dispositivos electrónicos.",
-                    "**Algoritmos Verdes:** Desarrollo de modelos de Machine Learning eficientes que minimizan el gasto energético computacional."
-                ]
-            },
-            cloud: {
-                title: "Cloud Computing",
-                badge: "La Infraestructura Habilitadora",
-                desc: "El almacenamiento y procesamiento en la nube permite democratizar recursos computacionales masivos bajo demanda, consolidando la eficiencia energética que los servidores locales (on-premise) no pueden alcanzar.",
-                points: [
-                    "**Arquitectura Multi-tenant:** Maximiza el uso del hardware físico compartiendo recursos entre múltiples usuarios de manera aislada.",
-                    "**Centros de Datos de Alta Eficiencia (PUE):** Los grandes proveedores de nube logran coeficientes de efectividad energética drásticamente mejores que los centros de datos tradicionales.",
-                    "**Migración hacia la Virtualización:** Reduce la necesidad de manufacturar servidores físicos dedicados e infrautilizados."
-                ]
-            },
-            ec: {
-                title: "Economía Circular (EC)",
-                badge: "El Modelo de Sostenibilidad",
-                desc: "Modelo que rompe el esquema lineal tradicional de 'tomar-hacer-desechar'. Busca diseñar productos sin desperdicios, mantener materiales en uso el mayor tiempo posible y regenerar los sistemas naturales.",
-                points: [
-                    "**Ecodiseño de Hardware:** Servidores modulares fáciles de reparar, actualizar y desensamblar.",
-                    "**Logística Inversa de E-waste:** Canales optimizados para recuperar componentes tecnológicos obsoletos y reintroducir metales raros al ciclo productivo.",
-                    "**Product-as-a-Service (PaaS):** Pasar de vender servidores físicos a vender capacidades de cómputo (servicios), manteniendo la propiedad y responsabilidad del ciclo de vida del hardware."
-                ]
-            },
-            "ia-cloud": {
-                title: "Sinergia: Inteligencia Artificial + Cloud",
-                badge: "Cómputo Inteligente y Eficiente",
-                desc: "La unión de estas tecnologías optimiza drásticamente la infraestructura tecnológica en sí misma.",
-                points: [
-                    "**Nube auto-optimizada por IA:** Algoritmos predictivos que apagan o reducen la potencia de servidores virtuales en horas de bajo tráfico energético.",
-                    "**Siting Inteligente:** La IA decide en qué zona geográfica ejecutar cargas de trabajo pesadas basándose en la disponibilidad de energía solar o eólica en tiempo real.",
-                    "**Enfriamiento Inteligente:** IA controlando los sistemas de climatización de los Data Centers para reducir el consumo hídrico y eléctrico."
-                ]
-            },
-            "cloud-ec": {
-                title: "Sinergia: Cloud Computing + Economía Circular",
-                badge: "Desmaterialización y Servitización",
-                desc: "La nube actúa como el catalizador perfecto para virtualizar el mundo físico, reduciendo drásticamente la necesidad de manufacturación.",
-                points: [
-                    "**Desmaterialización Total:** Transición de discos físicos, servidores de oficina y licencias plásticas hacia servicios 100% digitales en la nube.",
-                    "**Economía de Plataformas:** Nubes que facilitan mercados digitales peer-to-peer de intercambio de subproductos industriales o gestión de residuos.",
-                    "**Cómputo Circular Compartido:** Reutilización de hardware retirado de hiperescala para nubes secundarias de menor exigencia de procesamiento."
-                ]
-            },
-            "ec-ia": {
-                title: "Sinergia: Economía Circular + Inteligencia Artificial",
-                badge: "Optimización de Ciclos Cerrados",
-                desc: "La IA proporciona la visibilidad e inteligencia necesaria para coordinar cadenas de suministro e infraestructuras circulares complejas.",
-                points: [
-                    "**Clasificación Automatizada de Residuos:** Sistemas de visión por computadora que separan componentes electrónicos (e-waste) con precisión robótica.",
-                    "**Gemelos Digitales (Digital Twins):** Réplicas virtuales de productos potenciadas por IA para simular su desgaste y planificar su remanufactura exacta.",
-                    "**Simulación de Simbiosis Industrial:** Algoritmos que conectan industrias para que los desechos de una empresa se conviertan de manera automática en la materia prima de otra."
-                ]
-            }
-        };
+    <div id="diagnostico" class="results-box" style="display:none;"></div>
 
-        function showInfo(key) {
-            const panel = document.getElementById('info-panel');
-            const item = data[key];
-            
-            let pointsHTML = "";
-            item.points.forEach(point => {
-                // Reemplazar el formato **texto** por etiquetas fuertes de HTML
-                let formattedPoint = point.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                pointsHTML += `<li>${formattedPoint}</li>`;
-            });
+    <h2>Tabla de Costos de Producción en Corto Plazo</h2>
+    <div class="table-responsive">
+        <table id="tablaCostos">
+            <thead>
+                <tr>
+                    <th>Prod (Q)</th>
+                    <th>CF ($)</th>
+                    <th>CV ($)</th>
+                    <th>CT ($)</th>
+                    <th>CFMe ($)</th>
+                    <th>CVMe ($)</th>
+                    <th>CTMe ($)</th>
+                    <th>CMg ($)</th>
+                    <th>IMg ($)</th>
+                    <th>Beneficio ($)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-            panel.innerHTML = `
-                <div class="info-content">
-                    <span class="badge">${item.badge}</span>
-                    <h2>${item.title}</h2>
-                    <p>${item.desc}</p>
-                    <h3>Puntos clave y aplicaciones:</h3>
-                    <ul>${pointsHTML}</ul>
-                </div>
-            `;
+    <h2>Curvas de Costos Medios y Marginales</h2>
+    <div class="chart-container">
+        <canvas id="chartCostos"></canvas>
+    </div>
+</div>
+
+<script>
+// Datos base de producción simulada (Kg de carne producida en función del alimento consumido)
+const datosProduccion = [
+    { alimento: 0, q: 0 },
+    { alimento: 1000, q: 600 },
+    { alimento: 2000, q: 1400 },
+    { alimento: 3000, q: 2100 },
+    { alimento: 4000, q: 2600 },
+    { alimento: 5000, q: 2950 },
+    { alimento: 6000, q: 3200 },
+    { alimento: 7000, q: 3350 }
+];
+
+let chartInstance = null;
+
+function calcularSimulacion() {
+    const CF = parseFloat(document.getElementById('costoFijo').value);
+    const pxAlimento = parseFloat(document.getElementById('precioAlimento').value);
+    const IMg = parseFloat(document.getElementById('precioPollo').value); // En competencia, P = IMg
+
+    const tbody = document.querySelector('#tablaCostos tbody');
+    tbody.innerHTML = '';
+
+    let labelsX = [];
+    let dataCVMe = [];
+    let dataCTMe = [];
+    let dataCMg = [];
+    let dataIMg = [];
+
+    let optimoq = 0;
+    let maxBeneficio = -Infinity;
+    let puntoCierreIdx = -1;
+    let minCVMe = Infinity;
+
+    // Primer pasada: cálculos base
+    let resultados = datosProduccion.map((nodo, idx) => {
+        let q = nodo.q;
+        let CV = nodo.alimento * pxAlimento;
+        let CT = CF + CV;
+        
+        let CFMe = q > 0 ? (CF / q) : 0;
+        let CVMe = q > 0 ? (CV / q) : 0;
+        let CTMe = q > 0 ? (CT / q) : 0;
+
+        let CMg = 0;
+        if (idx > 0) {
+            let deltaQ = q - datosProduccion[idx-1].q;
+            let deltaCV = CV - (datosProduccion[idx-1].alimento * pxAlimento);
+            CMg = deltaQ > 0 ? (deltaCV / deltaQ) : 0;
         }
-    </script>
+
+        let ingresoTotal = q * IMg;
+        let beneficio = ingresoTotal - CT;
+
+        if (q > 0 && CVMe < minCVMe) {
+            minCVMe = CVMe;
+            puntoCierreIdx = idx;
+        }
+
+        return { q, CF, CV, CT, CFMe, CVMe, CTMe, CMg, IMg, beneficio };
+    });
+
+    // Renderizar tabla y preparar gráficos
+    resultados.forEach((r, idx) => {
+        let row = document.createElement('tr');
+        
+        // Identificar aproximación al óptimo económico (donde el beneficio es máximo en este tramo)
+        let esOptimo = false;
+        if (r.q > 0 && r.beneficio > maxBeneficio && r.CMg <= r.IMg) {
+            maxBeneficio = r.beneficio;
+            optimoq = r.q;
+        }
+
+        row.innerHTML = `
+            <td>${r.q}</td>
+            <td>${r.CF.toFixed(2)}</td>
+            <td>${r.CV.toFixed(2)}</td>
+            <td>${r.CT.toFixed(2)}</td>
+            <td>${r.q > 0 ? r.CFMe.toFixed(2) : '-'}</td>
+            <td>${r.q > 0 ? r.CVMe.toFixed(2) : '-'}</td>
+            <td>${r.q > 0 ? r.CTMe.toFixed(2) : '-'}</td>
+            <td>${idx > 0 ? r.CMg.toFixed(2) : '-'}</td>
+            <td>${r.IMg.toFixed(2)}</td>
+            <td style="color: ${r.beneficio >= 0 ? 'green':'red'}">${r.beneficio.toFixed(2)}</td>
+        `;
+
+        tbody.appendChild(row);
+
+        if (idx > 0) {
+            labelsX.push(`Q: ${r.q}`);
+            dataCVMe.push(r.CVMe.toFixed(2));
+            dataCTMe.push(r.CTMe.toFixed(2));
+            dataCMg.push(r.CMg.toFixed(2));
+            dataIMg.push(r.IMg.toFixed(2));
+        }
+    });
+
+    // Resaltar filas clave de manera dinámica
+    Array.from(tbody.rows).forEach(row => {
+        let qVal = parseInt(row.cells[0].innerText);
+        if (qVal === optimoq && optimoq > 0) row.classList.add('highlight-optimo');
+    });
+
+    // Mostrar diagnóstico empresarial
+    const diagnostico = document.getElementById('diagnostico');
+    diagnostico.style.display = 'block';
+    
+    if (IMg < minCVMe) {
+        diagnostico.innerHTML = `<strong>⚠️ DECISIÓN EMPRESARIAL (PUNTO DE CIERRE):</strong> El precio de venta ($${IMg}) está por debajo del CVMe mínimo ($${minCVMe.toFixed(2)}). <strong>La granja avícola debe CERRAR inmediatamente</strong> a corto plazo para no incurrir en más pérdidas que los costos fijos.`;
+        diagnostico.className = "results-box highlight-cierre";
+    } else {
+        diagnostico.innerHTML = `<strong>📈 DIAGNÓSTICO ECONÓMICO:</strong> El óptimo económico aproximado ocurre cerca de <strong>Q = ${optimoq} kg</strong>. En este punto se maximizan las ganancias netas estables frente al costo marginal de alimentación. La granja es sostenible operando bajo estos parámetros.`;
+        diagnostico.className = "results-box";
+    }
+
+    // Actualizar gráfico interactivo
+    if (chartInstance) chartInstance.destroy();
+
+    const ctx = document.getElementById('chartCostos').getContext('2d');
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelsX,
+            datasets: [
+                { label: 'Costo Marginal (CMg)', data: dataCMg, borderColor: '#e74c3c', fill: false, tension: 0.1 },
+                { label: 'Costo Variable Medio (CVMe)', data: dataCVMe, borderColor: '#3498db', fill: false, tension: 0.1 },
+                { label: 'Costo Total Medio (CTMe)', data: dataCTMe, borderColor: '#f1c40f', fill: false, tension: 0.1 },
+                { label: 'Precio / Ingreso Marginal (IMg)', data: dataIMg, borderColor: '#2ecc71', borderDash: [5, 5], fill: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { title: { display: true, text: 'Valor Monetario ($)' } },
+                x: { title: { display: true, text: 'Nivel de Producción (Q en Kg)' } }
+            }
+        }
+    });
+}
+
+// Inicializar la primera ejecución
+window.onload = calcularSimulacion;
+</script>
 </body>
 </html>
